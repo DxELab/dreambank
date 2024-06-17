@@ -1,0 +1,70 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dreambank"
+dynamic = ["version"]
+description = "Fetch DreamBank datasets."
+authors = [
+  {name = "Remington Mallett", email = "mallett.remy@gmail.com"},
+]
+maintainers = [
+  {name = "Remington Mallett", email = "mallett.remy@gmail.com"},
+]
+requires-python = ">=3.8"
+dependencies = [
+  "pandas>=2.0",
+  "pooch>=1.8",
+]
+readme = "README.rst"
+keywords = ["data", "datasets", "text", "nlp", "sleep", "dreams"]
+classifiers = [
+  "Development Status :: 1 - Planning",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
+
+[project.urls]
+Homepage = "https://github.com/dxelab/dreambank"
+
+[project.optional-dependencies]
+dev = [
+  "black",
+  "pydata-sphinx-theme",  # needs to be in requirements.txt also (for docs.yml)
+  "sphinx",
+  "sphinx_copybutton",  # needs to be in requirements.txt also (for docs.yml)
+  "sphinx-design",  # more options for pydatasphinx theme, eg, dropdowns, tabs
+]
+
+[project.scripts]
+dreambank = "dreambank.curation:curate"
+
+[tool.setuptools.dynamic]
+version = {attr = "dreambank.__version__"}
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+namespaces = false
+where = ["src"]
+
+[tool.setuptools.package-data]
+dreambank = [
+  "dreambank/data/registry.txt",
+  "dreambank/data/registry-source.txt",
+]
+
+[tool.ruff]
+line-length = 100

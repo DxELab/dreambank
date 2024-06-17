@@ -1,0 +1,11 @@
+__pycache__/
+.DS_Store
+
+# Docs
+docs/_build/
+docs/generated/
+docs/make.bat
+docs/Makefile
+
+# Pip
+*.egg-info/
