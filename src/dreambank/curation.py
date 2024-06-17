@@ -21,6 +21,8 @@ __all__ = [
     "read_source_info_as_dict",
     "write_source_registry",
     "write_curated_registry",
+    "write_dreams_df_to_csv",
+    "write_info_dict_to_json",
 ]
 
 
@@ -34,9 +36,10 @@ _cache_dir = pooch.os_cache("dreambank")
 # Identify the more permanent GitHub data directory that will be used to store
 # permanent files like the tabular data files and registry.
 # Write all tabular/tsv files within the local repository folder.
-_curated_data_dir = files("dreambank.data")  # for curated TSV/JSON files and registries
-_source_registry_filepath = _curated_data_dir.joinpath("registry-source.txt")
-_curated_registry_filepath = _curated_data_dir.joinpath("registry.txt")
+_top_data_dir = files("dreambank").parents[1].joinpath("data") # for curated TSV/JSON files
+_src_data_dir = files("dreambank.data")  # for registries
+_source_registry_filepath = _src_data_dir.joinpath("registry-source.txt")
+_curated_registry_filepath = _src_data_dir.joinpath("registry.txt")
 
 
 def load_source_repository():
@@ -165,7 +168,7 @@ def write_curated_registry(overwrite=False):
     with open(_curated_registry_filepath, "wt", encoding="utf-8") as registry:
         for d in get_all_dataset_ids():
             for suffix in [".tsv", ".json"]:
-                fp = _curated_data_dir.joinpath(d).with_suffix(suffix)
+                fp = _top_data_dir.joinpath(d).with_suffix(suffix)
                 fname = fp.name
                 hash_alg = "sha256"
                 known_hash = pooch.file_hash(fp, alg=hash_alg)
@@ -246,7 +249,7 @@ def read_source_dreams_as_df(dataset_id):
     n_dreams_total, n_dreams_displayed = re.findall(r"[0-9]+", n_dreams_statement)
     n_dreams_extracted = len(data)
     assert int(n_dreams_total) == int(n_dreams_displayed) == n_dreams_extracted
-    dreams = pd.DataFrame(data).astype(dict(n="str", dream="str", date="str")).replace(dict(date={None: pd.NA})).dropna(how="all", axis=1).sort_index(axis=0)
+    dreams = pd.DataFrame(data).replace(dict(date={None: pd.NA})).astype(dict(n="string", date="string", dream="string")).dropna(how="all", axis=1).sort_index(axis=0)
     return dreams
 
 
@@ -316,7 +319,7 @@ def write_dreams_df_to_csv(dataset_id, overwrite=False):
     ------
     `OSError` if file already exists and `overwrite` is ``False``.
     """
-    fp = _curated_data_dir.joinpath(dataset_id).with_suffix(".tsv")
+    fp = _top_data_dir.joinpath(dataset_id).with_suffix(".tsv")
     if fp.exists() and not overwrite:
         raise OSError("File already exists. Set `overwrite` as True or delete local file.")
     dreams = read_source_dreams_as_df(dataset_id)
@@ -353,11 +356,11 @@ def write_info_dict_to_json(dataset_id, overwrite=False):
     ------
     `OSError` if file already exists and `overwrite` is ``False``.
     """
-    fp = _curated_data_dir.joinpath(dataset_id).with_suffix(".json")
+    fp = _top_data_dir.joinpath(dataset_id).with_suffix(".json")
     if fp.exists() and not overwrite:
         raise OSError("File already exists. Set `overwrite` as True or delete local file.")
     info = read_source_info_as_dict(dataset_id)
-    with open(fp, "wt", encoding="utf-8") as fp:
+    with open(fp, "wt", encoding="utf-8", newline="\n") as fp:
         json.dump(info, fp, indent=4, sort_keys=False, ensure_ascii=False)
 
 
