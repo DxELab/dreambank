@@ -19,7 +19,7 @@ __all__ = [
 
 
 registry_hashes = {
-    "main": "sha256:fe0d7f655f1363dc2cc7f2e5eac3dbe7e7b299446aafe19c872f737e90454a5a",
+    "main": "sha256:c2307b5f93ec13883b472d4764488b2386acf604aca7b78ad760656898247bcb",
 }
 
 def get_registry_filepath(version_str):
