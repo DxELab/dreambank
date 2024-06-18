@@ -36,10 +36,10 @@ _cache_dir = pooch.os_cache("dreambank")
 # Identify the more permanent GitHub data directory that will be used to store
 # permanent files like the tabular data files and registry.
 # Write all tabular/tsv files within the local repository folder.
-_top_data_dir = files("dreambank").parents[1].joinpath("data") # for curated TSV/JSON files
-_src_data_dir = files("dreambank.data")  # for registries
-_source_registry_filepath = _src_data_dir.joinpath("registry-source.txt")
-_curated_registry_filepath = _src_data_dir.joinpath("registry.txt")
+_repo_dir = files("dreambank").parents[1]  # for curated registry file
+_data_dir = _repo_dir.joinpath("data")  # for curated TSV/JSON files
+_source_registry_filepath = _repo_dir.joinpath("registry-source.txt")
+_curated_registry_filepath = _repo_dir.joinpath("registry.txt")
 
 
 def load_source_repository():
@@ -133,7 +133,7 @@ def write_source_registry(overwrite=False):
     from tqdm import tqdm
     if _source_registry_filepath.exists() and not overwrite:
         raise OSError("Registry file already exists.")
-    with open(_source_registry_filepath, "wt", encoding="utf-8") as registry:
+    with open(_source_registry_filepath, "wt", encoding="utf-8", newline="\n") as f:
         for d in (pbar := tqdm(get_all_dataset_ids())):
             pbar.set_description(f"Creating source repository for {d}")
             fnames_and_urls = {
@@ -144,7 +144,7 @@ def write_source_registry(overwrite=False):
             for fn, url in fnames_and_urls.items():
                 fp = pooch.retrieve(url=url, fname=fn, path=_cache_dir, known_hash=None)
                 file_hash = pooch.file_hash(fp)
-                registry.write(f"{fn} sha256:{file_hash} {url}\n")
+                f.write(f"{fn} sha256:{file_hash} {url}\n")
 
 
 def write_curated_registry(overwrite=False):
@@ -165,15 +165,15 @@ def write_curated_registry(overwrite=False):
     """
     if _curated_registry_filepath.exists() and not overwrite:
         raise OSError("Curated registry file already exists.")
-    with open(_curated_registry_filepath, "wt", encoding="utf-8") as registry:
+    with open(_curated_registry_filepath, "wt", encoding="utf-8", newline="\n") as f:
         for d in get_all_dataset_ids():
             for suffix in [".tsv", ".json"]:
-                fp = _top_data_dir.joinpath(d).with_suffix(suffix)
+                fp = _data_dir.joinpath(d).with_suffix(suffix)
                 fname = fp.name
                 hash_alg = "sha256"
                 known_hash = pooch.file_hash(fp, alg=hash_alg)
                 row_string = f"{fname} {hash_alg}:{known_hash}\n"
-                registry.write(row_string)
+                f.write(row_string)
 
 
 def fetch_source_file(dataset, component, **kwargs):
@@ -319,7 +319,7 @@ def write_dreams_df_to_csv(dataset_id, overwrite=False):
     ------
     `OSError` if file already exists and `overwrite` is ``False``.
     """
-    fp = _top_data_dir.joinpath(dataset_id).with_suffix(".tsv")
+    fp = _data_dir.joinpath(dataset_id).with_suffix(".tsv")
     if fp.exists() and not overwrite:
         raise OSError("File already exists. Set `overwrite` as True or delete local file.")
     dreams = read_source_dreams_as_df(dataset_id)
@@ -356,7 +356,7 @@ def write_info_dict_to_json(dataset_id, overwrite=False):
     ------
     `OSError` if file already exists and `overwrite` is ``False``.
     """
-    fp = _top_data_dir.joinpath(dataset_id).with_suffix(".json")
+    fp = _data_dir.joinpath(dataset_id).with_suffix(".json")
     if fp.exists() and not overwrite:
         raise OSError("File already exists. Set `overwrite` as True or delete local file.")
     info = read_source_info_as_dict(dataset_id)

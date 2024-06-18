@@ -53,18 +53,18 @@ dreambank = "dreambank.curation:curate"
 [tool.setuptools.dynamic]
 version = {attr = "dreambank.__version__"}
 
-[tool.setuptools]
-include-package-data = true
+# [tool.setuptools]
+# include-package-data = true
 
-[tool.setuptools.packages.find]
-namespaces = false
-where = ["src"]
+# [tool.setuptools.packages.find]
+# namespaces = false
+# where = ["src"]
 
-[tool.setuptools.package-data]
-dreambank = [
-  "dreambank/data/registry.txt",
-  "dreambank/data/registry-source.txt",
-]
+# [tool.setuptools.package-data]
+# dreambank = [
+#   "dreambank/data/registry.txt",
+#   "dreambank/data/registry-source.txt",
+# ]
 
 [tool.ruff]
 line-length = 100

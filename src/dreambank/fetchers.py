@@ -5,12 +5,12 @@ import json
 import pandas as pd
 import pooch
 
-from importlib.metadata import version as importlib_version
 from importlib.resources import files
 
 
 __all__ = [
     "available_datasets",
+    "get_registry_filepath",
     "fetch",
     "read_dreams",
     "read_info",
@@ -18,19 +18,15 @@ __all__ = [
 
 
 
-
-old_registry_hashes = {
-    "v0": "sha256:fe0d7f655f1363dc2cc7f2e5eac3dbe7e7b299446aafe19c872f737e90454a5a",
+registry_hashes = {
+    "main": "sha256:fe0d7f655f1363dc2cc7f2e5eac3dbe7e7b299446aafe19c872f737e90454a5a",
 }
 
 def get_registry_filepath(version_str):
-    current_version_str = "v" + importlib_version("dreambank")
-    if version_str == current_version_str:
-        fp = files("dreambank.data").joinpath("registry.txt")
-    else:
-        url = f"https://github.com/dxelab/dreambank/raw/{version_str}/src/dreambank/data/registry.txt"
-        known_hash = old_registry_hashes[version_str]
-        fp = pooch.retrieve(url, known_hash=known_hash)
+    version_str = pooch.check_version(version_str, fallback="main")
+    url = f"https://github.com/dxelab/dreambank/raw/{version_str}/registry.txt"
+    known_hash = registry_hashes[version_str]
+    fp = pooch.retrieve(url, known_hash=known_hash, path=pooch.os_cache("dreambank"))
     return fp
 
 def create_pup(version):
