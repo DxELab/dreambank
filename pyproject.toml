@@ -39,12 +39,11 @@ classifiers = [
 Homepage = "https://github.com/dxelab/dreambank"
 
 [project.optional-dependencies]
-dev = [
-  "black",
-  "pydata-sphinx-theme",  # needs to be in requirements.txt also (for docs.yml)
+docs = [
   "sphinx",
-  "sphinx_copybutton",  # needs to be in requirements.txt also (for docs.yml)
-  "sphinx-design",  # more options for pydatasphinx theme, eg, dropdowns, tabs
+  "pydata-sphinx-theme",
+  "sphinx-design",
+  "sphinx_copybutton",
 ]
 
 [project.scripts]

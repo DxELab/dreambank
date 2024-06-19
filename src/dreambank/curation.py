@@ -37,7 +37,7 @@ _cache_dir = pooch.os_cache("dreambank")
 # permanent files like the tabular data files and registry.
 # Write all tabular/tsv files within the local repository folder.
 _repo_dir = files("dreambank").parents[1]  # for curated registry file
-_data_dir = _repo_dir.joinpath("data")  # for curated TSV/JSON files
+_data_dir = _repo_dir.joinpath("datasets")  # for curated TSV/JSON files
 _source_registry_filepath = _repo_dir.joinpath("registry-source.txt")
 _curated_registry_filepath = _repo_dir.joinpath("registry.txt")
 

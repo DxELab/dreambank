@@ -17,9 +17,9 @@ __all__ = [
 
 
 repository = pooch.create(
-    base_url="https://github.com/dxelab/dreambank/raw/{version}/data/",
+    base_url="https://github.com/dxelab/dreambank/raw/{version}/datasets/",
     path=pooch.os_cache("dreambank"),
-    version=f"v{installed_version("dreambank")}",
+    version=f"v{installed_version('dreambank')}",
     version_dev="dev",
 )
 repository.load_registry(files("dreambank.data").joinpath("registry.txt"))
