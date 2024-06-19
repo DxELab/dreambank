@@ -5,60 +5,123 @@ import json
 import pandas as pd
 import pooch
 
+from importlib.metadata import version as installed_version
 from importlib.resources import files
-
 
 __all__ = [
     "available_datasets",
-    "get_registry_filepath",
     "fetch",
     "read_dreams",
     "read_info",
 ]
 
 
+repository = pooch.create(
+    base_url="https://github.com/dxelab/dreambank/raw/{version}/data/",
+    path=pooch.os_cache("dreambank"),
+    version=f"v{installed_version("dreambank")}",
+    version_dev="dev",
+)
+repository.load_registry(files("dreambank.data").joinpath("registry.txt"))
 
-registry_hashes = {
-    "main": "sha256:c2307b5f93ec13883b472d4764488b2386acf604aca7b78ad760656898247bcb",
-}
 
-def get_registry_filepath(version_str):
-    version_str = pooch.check_version(version_str, fallback="main")
-    url = f"https://github.com/dxelab/dreambank/raw/{version_str}/registry.txt"
-    known_hash = registry_hashes[version_str]
-    fp = pooch.retrieve(url, known_hash=known_hash, path=pooch.os_cache("dreambank"))
+
+def available_datasets():
+    """Return a list of all unique dataset IDs available in `dreambank`.
+
+    Returns
+    -------
+    dataset_ids : list
+        A sorted list of strings, each a unique dataset ID.
+
+    Examples
+    --------
+    >>> import dreambank
+    >>> dataset_ids = dreambank.available_datasets()
+    >>> print(dataset_ids[:5])
+    ['alta', 'angie', 'arlie', 'b', 'b-baseline']
+    >>> print(dataset_ids[-5:])
+    ['vonuslar', 'wedding', 'west_coast_teens', 'zurich-f', 'zurich-m']
+    """
+    return sorted(set(fn.split(".")[0] for fn in repository.registry_files))
+
+
+def fetch(fname):
+    """Fetch a single `dreambank` file and return the filepath.
+
+    The main use case of this would be if a user wants to read the file with custom code.
+
+    Parameters
+    ----------
+    fname : str
+        Dataset ID and extension (e.g., ``'alta.tsv'``, ``'alta.json'``).
+
+    Returns
+    -------
+    fp : str
+        Full filepath of local file.
+
+    Examples
+    --------
+    >>> import dreambank
+    >>> import pandas as pd
+    >>>
+    >>> fp = dreambank.fetch("bosnak.tsv")
+    >>> bosnak = pd.read_table(fp, index_col="n")
+    """
+    fp = repository.fetch(fname)
     return fp
 
-def create_pup(version):
-    # Offers version control.
-    version_str = f"v{version}"
-    pup = pooch.create(
-        path=pooch.os_cache("dreambank"),
-        base_url="https://github.com/dxelab/dreambank/raw/{version}/data/",
-        version=version_str,
-        version_dev="main",
-    )
-    registry_filepath = get_registry_filepath(version_str)
-    pup.load_registry(registry_filepath)
-    return pup
+def read_dreams(dataset_id):
+    """Return a :class:`pandas.DataFrame` of dreams.
 
+    Parameters
+    ----------
+    dataset_id : str
+        The dataset to read in.
 
-def available_datasets(version=1):
-    return sorted(set(x.split(".")[0] for x in create_pup(version).registry_files))
+    Returns
+    -------
+    dreams : :class:`pandas.DataFrame`
+        A :class:`~pandas.DataFrame` with 2 or 3 columns.
 
-def fetch(fname, version=1):
+    Examples
+    --------
+    >>> import dreambank
+    >>> dreams = dreambank.read_dreams("izzy22_25")
+    >>> dreams.head(3)
     """
-    If you just want filepath to load manually
+    fp = fetch(f"{dataset_id}.tsv")
+    dreams = pd.read_table(fp, dtype="string")
+    return dreams
+
+def read_info(dataset_id):
+    """Read info (i.e., metadata) for a given dataset.
+
+    Parameters
+    ----------
+    dataset_id : str
+        The dataset to read in.
+
+    Returns
+    -------
+    info : dict
+        A dictionary with metadata for the given dataset.
+    
+        * ``short_name``: dataset_id
+        * ``long_name``: long_name
+        * ``n_dreams``: n_dreams
+        * ``timeframe``: timeframe
+        * ``sex``: sex
+        * ``description``: description
+
+    Examples
+    --------
+    >>> import dreambank
+    >>> info = dreambank.read_info("izzy22_25")
+    >>> info
     """
-    fp = create_pup(version).fetch(fname)
-    return fp
-
-def read_dreams(dataset_id, version=1):
-    fp = create_pup(version).fetch(f"{dataset_id}.tsv")
-    return pd.read_table(fp)
-
-def read_info(fname, version=1):
-    fp = create_pup(version).fetch(f"{dataset_id}.json")
+    fp = fetch(f"{dataset_id}.json")
     with open(fp, "rt", encoding="utf-8") as f:
-        data = json.load(f)
-    return data
+        info = json.load(f)
+    return info
